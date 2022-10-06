@@ -4,7 +4,8 @@
   "description": "Prerequisites for building and deploying your application locally. Build and Deploy instructions for the web application.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "start": "node client_controller.js"
   },
   "author": "",
   "license": "ISC",
@@ -19,5 +20,8 @@
     "swagger-jsdoc": "^6.2.5",
     "swagger-ui-express": "^4.5.0",
     "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "jest": "^29.1.2"
   }
 }
