@@ -10,4 +10,4 @@ Clone this github repo
 navigate to the repo and open vscode in that folder
 run the command "npm install". All the dependencies are installed.
 now run the command "nodemon app.js" in the terminal. A server is setup in the localhost:3069 port.
-Also SwaggerUI is set in the /api-docs endpoint of the same port url.
+Also SwaggerUI is set in the /api-docs endpoint of the same port url
