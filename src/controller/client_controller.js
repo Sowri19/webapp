@@ -18,6 +18,9 @@ const bcrypt = require("bcrypt");
 app.use(cors());
 app.use(bodyParser.json());
 
+const { User } = require("../../models");
+const { where } = require("sequelize");
+
 let bCrypting = (Password) => {
   return bcrypt.hashSync(Password, bcrypt.genSaltSync(10));
 };
@@ -143,6 +146,8 @@ app.use((Error, req, res, next) => {
   next();
 });
 
-app.listen(3080, () => {
-  console.log(`Server listening on the port:::::: 3080`);
+User.sequelize.sync().then((req) => {
+  app.listen(3080, () => {
+    console.log(`Server listening on the port:::::: 3080`);
+  });
 });
