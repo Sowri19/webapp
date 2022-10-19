@@ -90,30 +90,67 @@ app.post("/v1/account", async (req, res) => {
 // });
 // }
 
-app.get("/client", (req, res) => {
-  const authHead = Buffer.from(
-    req.headers.authorization.split(" ")[1],
-    "base64"
-  ).toString("ascii");
-  const user = authHead.split(":")[0];
-  const pw = authHead.split(":")[1];
-  res.status(200);
-  getData({ email: user }).then((result) => {
-    console.log("Client Found");
-    console.log(result, "RESULT");
-    let pass = result[0].Password;
-    bcrypt.compare(bCrypting(pw), pass, function (Error, valid) {
-      getData({ email: user }).then((result) => {
-        res.status(200);
-        res.send({
-          id: result[0].id,
-          FirstName: result[0].FirstName,
-          LastName: result[0].LastName,
-          EmailId: result[0].EmailId,
-        });
-      });
-    });
-  });
+// app.get("/client", (req, res) => {
+//   const authHead = Buffer.from(
+//     req.headers.authorization.split(" ")[1],
+//     "base64"
+//   ).toString("ascii");
+//   const user = authHead.split(":")[0];
+//   const pw = authHead.split(":")[1];
+//   res.status(200);
+//   getData({ email: user }).then((result) => {
+//     console.log("Client Found");
+//     console.log(result, "RESULT");
+//     let pass = result[0].Password;
+//     bcrypt.compare(bCrypting(pw), pass, function (Error, valid) {
+//       getData({ email: user }).then((result) => {
+//         res.status(200);
+//         res.send({
+//           id: result[0].id,
+//           FirstName: result[0].FirstName,
+//           LastName: result[0].LastName,
+//           EmailId: result[0].EmailId,
+//         });
+//       });
+//     });
+//   });
+// });
+
+// Get method using sequelize
+app.get("/v1/account/:id", (req, res) => {
+  try {
+    const ClientID = req.params.id;
+    const EncodedUserPass = req.headers.authorization.split(" ")[1];
+    const DecodedUserPass = Buffer.from(EncodedUserPass, "base64").toString(
+      "ascii"
+    );
+    const DecodedUser = DecodedUserPass.split(":")[0];
+    const DecodedPass = DecodedUserPass.split(":")[1];
+    User.findOne({ where: { EmailId: DecodedUser, id: ClientID } }).then(
+      (result) => {
+        if (result === null) {
+          res.status(200);
+          res.send({ Output: "Client Not Found" });
+        } else {
+          bcrypt.compare(
+            DecodedPass,
+            result.dataValues.Password,
+            function (err, authenticated) {
+              if (authenticated) {
+                result.dataValues.Password = undefined;
+                res.status(200).send(result);
+              } else {
+                res.status(200);
+                res.send({ Output: "Wrong Password" });
+              }
+            }
+          );
+        }
+      }
+    );
+  } catch (err) {
+    return res.status(400).send("Client Not Found");
+  }
 });
 
 app.put("/client", (req, res) => {
