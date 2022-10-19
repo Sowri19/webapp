@@ -38,25 +38,42 @@ let ValidObject = (obj) => {
   }
 };
 
-//Adding Bcrypt to the password
-app.post("/client", (req, res) => {
-  getData({ EmailID: req.body.EmailID }).then((result) => {
-    if (result.length === 0) {
-      res.status(200);
-      let insertObject = {
-        FirstName: req.body.FirstName,
-        LastName: req.body.LastName,
-        EmailID: req.body.EmailID,
-        Password: bCrypting(req.body.Password),
-      };
-      console.log(insertObject);
-      addData(insertObject);
-      res.send({ message: "User Created Test" });
-    } else {
-      res.status(400);
-      res.send({ message: "User Already Exists" });
-    }
-  });
+// //Adding Bcrypt to the password
+// app.post("/client", (req, res) => {
+//   getData({ EmailID: req.body.EmailID }).then((result) => {
+//     if (result.length === 0) {
+//       res.status(200);
+//       let insertObject = {
+//         FirstName: req.body.FirstName,
+//         LastName: req.body.LastName,
+//         EmailID: req.body.EmailID,
+//         Password: bCrypting(req.body.Password),
+//       };
+//       console.log(insertObject);
+//       addData(insertObject);
+//       res.send({ message: "User Created Test" });
+//     } else {
+//       res.status(400);
+//       res.send({ message: "User Already Exists" });
+//     }
+//   });
+// });
+
+// Post Method Using Sequelize
+
+app.post("/v1/account", async (req, res) => {
+  try {
+    const NewClient = await User.create({
+      FirstName: req.body.FirstName,
+      LastName: req.body.LastName,
+      EmailId: req.body.EmailID,
+      Password: bCrypting(req.body.Password),
+    });
+    NewClient.Password = undefined;
+    return res.status(201).send(NewClient);
+  } catch (Error) {
+    return res.status(400).send(Error);
+  }
 });
 
 // bcrypt.hash(req.body.Password, saltRounds, function (err, hash) {
