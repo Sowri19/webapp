@@ -27,7 +27,6 @@ jobs:
       - name: Setup Packer
         uses: hashicorp-contrib/setup-packer@v1.0.0
       - name: Run packer commands
-
         run: |
           cd Packer
           packer init .
