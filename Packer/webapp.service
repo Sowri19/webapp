@@ -1,0 +1,15 @@
+[Unit]
+Description=webapp App
+After=webapp.service
+[Service]
+WorkingDirectory=/home/ubuntu/webapp
+ExecStart=/usr/bin/node /home/ubuntu/webapp/src/controller/client_controller.js
+Restart=always
+RestartSec=10
+StandardOutput=syslog
+StandardError=syslog
+SyslogIdentifier=webapp
+User=ubuntu
+[Install]
+WantedBy=multi-user.target
+WantedBy=cloud-init.target
