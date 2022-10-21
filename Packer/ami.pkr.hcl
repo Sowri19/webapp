@@ -31,7 +31,9 @@ source "amazon-ebs" "my-ami" {
     "us-east-1",
   ]
 
-
+ami_users =[
+  "275040382637",
+]
 
   aws_polling {
     delay_seconds = 120
