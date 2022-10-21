@@ -38,6 +38,9 @@ let ValidObject = (obj) => {
   }
 };
 
+app.get("/healthz", async (req, res) => {
+  res.send({ message: "The server is running" });
+});
 // //Adding Bcrypt to the password
 // app.post("/client", (req, res) => {
 //   getData({ EmailID: req.body.EmailID }).then((result) => {
