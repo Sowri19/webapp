@@ -6,7 +6,7 @@ Requirements & Description : All API request/response payloads should be in JSON
 
 Steps to run this Project :
 
-Clone this github repo
+->Clone this github repo
 navigate to the repo and open vscode in that folder
 run the command "npm install". All the dependencies are installed.
 now run the command "nodemon app.js" in the terminal. A server is setup in the localhost:3069 port.
