@@ -9,5 +9,8 @@ Steps to run this Project :
 ->Clone this github repo
 navigate to the repo and open vscode in that folder
 run the command "npm install". All the dependencies are installed.
-now run the command "nodemon app.js" in the terminal. A server is setup in the localhost:3069 port.
+give the credentials before running the packer build filename.hcl and then run the command in the terminal.
+
+Ami is created in the EC2 and can connect the instance to the server.
+
 Also SwaggerUI is set in the /api-docs endpoint of the same port url
