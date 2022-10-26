@@ -54,3 +54,8 @@ EOF
 echo "Starting mysql server"
 
 sudo service mysql start
+sudo npm i pm2
+sudo npm i -g pm2
+sudo pm2 start client_controller.js
+sudo pm2 startup systemd
+sudo apt-get clean
