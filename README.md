@@ -14,3 +14,4 @@ give the credentials before running the packer build filename.hcl and then run t
 Ami is created in the EC2 and can connect the instance to the server.
 
 Also SwaggerUI is set in the /api-docs endpoint of the same port url
+testing
