@@ -97,189 +97,192 @@ app.get("/v1/account/:id", (req, res) => {
   }
 });
 
-// const basicAuth = require("express-basic-auth");
-// app.use(basicAuth);
+// // const basicAuth = require("express-basic-auth");
+// // app.use(basicAuth);
 
 
-//Adding Basic Authentication  
-// function Basicauthentication(req, res, next) {
-//   var authenticationHeader = req.headers.authorization || null;
-//   if (!authenticationHeader) {
-//     return res.status(400);
-//   }
-//   var auth = new Buffer.from(authenticationHeader.split(" ")[1], "base64")
-//     .toString()
-//     .split(":");
-//   return auth;
-// }
+// //Adding Basic Authentication  
+// // function Basicauthentication(req, res, next) {
+// //   var authenticationHeader = req.headers.authorization || null;
+// //   if (!authenticationHeader) {
+// //     return res.status(400);
+// //   }
+// //   var auth = new Buffer.from(authenticationHeader.split(" ")[1], "base64")
+// //     .toString()
+// //     .split(":");
+// //   return auth;
+// // }
 
-// //get user data with sequalize 
-// app.get("/v1/account/:id", async (req, res) => {
+// // //get user data with sequalize 
+// // app.get("/v1/account/:id", async (req, res) => {
+// //   try {
+// //     auth = Basicauthentication(req, res);
+// //     var userName = auth[0];
+// //     var passWord = auth[1];
+// //     const client = await User.findOne({
+// //       where: {
+// //         username: userName,
+// //       },
+
+// //     });
+// //     if (client) {
+// //       const validPass = bcrypt.compareSync(passWord, client.password);
+// //       if (validPass) {
+// //         if (req.params.id === client.id) {
+// //           client.password = undefined;
+// //           return res.status(200).send(client);
+// //         } else {
+// //           return res.status(403).send("Forbidden");
+// //         }
+// //       } else {
+// //         return res.status(401).send("Unauthorized");
+// //       }
+// //     } else {
+// //       return res.status(401).send("Unauthorized");
+// //     }
+// //   } catch (err) {
+
+// //     console.log(err);
+// //     return res.status(400).send("Bad Request");
+// //   }
+// // });
+
+
+
+// // // create new user end point with sequelize 
+// // app.post("/v1/account", async (req, res) => {
+// //   try {
+// //     const hash = await bcrypt.hash(req.body.password, 10);
+// //     const newuser = await User.create({
+// //       FirstName: req.body.FirstName,
+// //       LastName: req.body.LastName,
+// //       EmailId: req.body.EmailID,
+// //       password: hash,
+// //     });
+
+// //     newuser.password = undefined;
+// //     return res.status(201).send(newuser);
+// //   } catch (err) {
+
+// //     return res.status(400).send(err);
+// //   }
+// // });
+
+// // app.put("/v1/account/:id", async (req, res) => {
+// //   // Checking  any other fields than the editable fields
+// //   try {
+// //     const bodyfields = req.body;
+// //     for (let x in bodyfields) {
+// //       if (
+// //         x != "first_name" &&
+// //         x != "last_name" &&
+// //         x != "password" &&
+// //         x != "username"
+// //       ) {
+// //         return res.status(400).send("Bad Request");
+// //       }
+// //     }
+
+// //     auth = Basicauthentication(req, res);
+// //     var user = auth[0];
+// //     var pass = auth[1];
+
+// //     const dbAcc = await User.findOne({
+// //       where: {
+// //         username: user,
+// //       },
+// //     });
+// //     if (dbAcc) {
+
+// //       const validPass = bcrypt.compareSync(pass, dbAcc.password);
+// //       if (validPass) {
+// //         if (req.params.id === dbAcc.id) {
+// //           const Hpassword = req.body.password || pass
+// //           const first = req.body.first_name || dbAcc.first_name
+// //           const last = req.body.last_name || dbAcc.last_name
+
+// //           const hash = bcrypt.hashSync(Hpassword, 10);
+// //           const Accu = await User.update({
+// //             first_name: first,
+// //             last_name: last,
+// //             password: hash
+// //           }, {
+// //             where: {
+// //               username: user,
+// //             },
+// //           });
+
+// //           return res.status(200).send("");
+
+// //         } else {
+// //           return res.status(403).send("Forbidden");
+// //         }
+// //       } else {
+// //         return res.status(401).send("Unauthorized");
+// //       }
+// //     } else {
+// //       return res.status(401).send("Unauthorized");
+// //     }
+// //   } catch (err) {
+// //     console.log(err);
+// //     return res.status(400).send("Bad Request");
+// //   }
+// // });
+// app.put("/v1/account/:id", (req, res) => {
 //   try {
-//     auth = Basicauthentication(req, res);
-//     var userName = auth[0];
-//     var passWord = auth[1];
-//     const client = await User.findOne({
-//       where: {
-//         username: userName,
-//       },
-
-//     });
-//     if (client) {
-//       const validPass = bcrypt.compareSync(passWord, client.password);
-//       if (validPass) {
-//         if (req.params.id === client.id) {
-//           client.password = undefined;
-//           return res.status(200).send(client);
+//     const ClientID = req.params.id;
+//     const EncodedUserPass = req.headers.authorization.split(" ")[1];
+//     const DecodedUserPass = Buffer.from(EncodedUserPass, "base64").toString(
+//       "ascii"
+//     );
+//     const DecodedUser = DecodedUserPass.split(":")[0];
+//     const DecodedPass = DecodedUserPass.split(":")[1];
+//     User.findOne({ where: { EmailId: DecodedUser, id: ClientID } }).then(
+//       (result) => {
+//         if (result === null) {
+//           res.status(200);
+//           res.send({ Output: "Client Not Found" });
 //         } else {
-//           return res.status(403).send("Forbidden");
+//           bcrypt.compare(
+//             DecodedPass,
+//             result.dataValues.Password,
+//             function async(err, authenticated) {
+//               if (authenticated) {
+//                 User.update(req.body, { where: { id: ClientID } }).then(
+//                   (result) => {
+//                     User.findOne({
+//                       where: { EmailId: DecodedUser, id: ClientID },
+//                     }).then((UpdatedResult) => {
+//                       console.log(UpdatedResult);
+//                       UpdatedResult.dataValues.Password = undefined;
+//                       res.status(200).send(UpdatedResult);
+//                     });
+//                   }
+//                 );
+//               } else {
+//                 res.status(200);
+//                 res.send({ Output: "Wrong password" });
+//               }
+//             }
+//           );
 //         }
-//       } else {
-//         return res.status(401).send("Unauthorized");
 //       }
-//     } else {
-//       return res.status(401).send("Unauthorized");
-//     }
+//     );
 //   } catch (err) {
-
-//     console.log(err);
-//     return res.status(400).send("Bad Request");
+//     return res.status(400).send("Client Not Found");
 //   }
 // });
 
-
-
-// // create new user end point with sequelize 
-// app.post("/v1/account", async (req, res) => {
-//   try {
-//     const hash = await bcrypt.hash(req.body.password, 10);
-//     const newuser = await User.create({
-//       FirstName: req.body.FirstName,
-//       LastName: req.body.LastName,
-//       EmailId: req.body.EmailID,
-//       password: hash,
-//     });
-
-//     newuser.password = undefined;
-//     return res.status(201).send(newuser);
-//   } catch (err) {
-
-//     return res.status(400).send(err);
-//   }
-// });
-
-// app.put("/v1/account/:id", async (req, res) => {
-//   // Checking  any other fields than the editable fields
-//   try {
-//     const bodyfields = req.body;
-//     for (let x in bodyfields) {
-//       if (
-//         x != "first_name" &&
-//         x != "last_name" &&
-//         x != "password" &&
-//         x != "username"
-//       ) {
-//         return res.status(400).send("Bad Request");
-//       }
-//     }
-
-//     auth = Basicauthentication(req, res);
-//     var user = auth[0];
-//     var pass = auth[1];
-
-//     const dbAcc = await User.findOne({
-//       where: {
-//         username: user,
-//       },
-//     });
-//     if (dbAcc) {
-
-//       const validPass = bcrypt.compareSync(pass, dbAcc.password);
-//       if (validPass) {
-//         if (req.params.id === dbAcc.id) {
-//           const Hpassword = req.body.password || pass
-//           const first = req.body.first_name || dbAcc.first_name
-//           const last = req.body.last_name || dbAcc.last_name
-
-//           const hash = bcrypt.hashSync(Hpassword, 10);
-//           const Accu = await User.update({
-//             first_name: first,
-//             last_name: last,
-//             password: hash
-//           }, {
-//             where: {
-//               username: user,
-//             },
-//           });
-
-//           return res.status(200).send("");
-
-//         } else {
-//           return res.status(403).send("Forbidden");
-//         }
-//       } else {
-//         return res.status(401).send("Unauthorized");
-//       }
-//     } else {
-//       return res.status(401).send("Unauthorized");
-//     }
-//   } catch (err) {
-//     console.log(err);
-//     return res.status(400).send("Bad Request");
-//   }
-// });
-app.put("/v1/account/:id", (req, res) => {
-  try {
-    const ClientID = req.params.id;
-    const EncodedUserPass = req.headers.authorization.split(" ")[1];
-    const DecodedUserPass = Buffer.from(EncodedUserPass, "base64").toString(
-      "ascii"
-    );
-    const DecodedUser = DecodedUserPass.split(":")[0];
-    const DecodedPass = DecodedUserPass.split(":")[1];
-    User.findOne({ where: { EmailId: DecodedUser, id: ClientID } }).then(
-      (result) => {
-        if (result === null) {
-          res.status(200);
-          res.send({ Output: "Client Not Found" });
-        } else {
-          bcrypt.compare(
-            DecodedPass,
-            result.dataValues.Password,
-            function async(err, authenticated) {
-              if (authenticated) {
-                User.update(req.body, { where: { id: ClientID } }).then(
-                  (result) => {
-                    User.findOne({
-                      where: { EmailId: DecodedUser, id: ClientID },
-                    }).then((UpdatedResult) => {
-                      console.log(UpdatedResult);
-                      UpdatedResult.dataValues.Password = undefined;
-                      res.status(200).send(UpdatedResult);
-                    });
-                  }
-                );
-              } else {
-                res.status(200);
-                res.send({ Output: "Wrong password" });
-              }
-            }
-          );
-        }
-      }
-    );
-  } catch (err) {
-    return res.status(400).send("Client Not Found");
-  }
-});
-
-
+  app.post('/upload', upload.single('file'), (req, res)=> {
+    // console.log(req.file);
+    res.send("File Uploaded"+ req.file.location+ ' Location!');
+  });
 
 // Document upload End point
 
 // endpoint to upload the document 
 const Ufile = upload.single("file");
-app.post("/v1/documents", async (req, res) => {
+app.post("/v1/upload", async (req, res) => {
   try {
     const ClientID = req.params.id;
     const EncodedUserPass = req.headers.authorization.split(" ")[1];
