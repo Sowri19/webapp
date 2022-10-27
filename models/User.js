@@ -19,7 +19,7 @@ module.exports = (sequelize, DataTypes) => {
       EmailId: {
         type: DataTypes.STRING,
         allowNull: false,
-        unique: "email_id",
+        unique: "EmailId",
         primaryKey: true,
         validate: {
           isEmail: true,
