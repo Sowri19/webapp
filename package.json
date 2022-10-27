@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "test": "jest",
-    "start": "node client_controller.js"
+    "start": "node src/controller/client_controller.js"
   },
   "author": "",
   "license": "ISC",
