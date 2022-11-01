@@ -1,4 +1,3 @@
-
 const express = require("express");
 require("dotenv").config();
 const app = express();
@@ -12,7 +11,12 @@ const {
 } = require("./models");
 User.sequelize.sync();
 Document.sequelize.sync();
-const bcrypt = require("bcrypt");
+
+const bcrypt = require("bcrypt"); 
+const { response } = require("express");
+
+// const basicAuth = require("express-basic-auth");
+// app.use(basicAuth);
 
 // Configuring the AWS environment
 aws.config.update({
@@ -37,40 +41,29 @@ const upload = multer({
   })
 });
 
-let bCrypting = (Password) => {
-  return bcrypt.hashSync(Password, bcrypt.genSaltSync(10));
-};
-
+// Checking the End Point
 app.get("/healthz", async (req, res) => {
   res.send({ message: "The server is running" });
   res.status(200);
 });
 
-app.post("/v1/account", async (req, res) => {
-  try {
-    const NewClient = await User.create({
-      FirstName: req.body.FirstName,
-      LastName: req.body.LastName,
-      EmailId: req.body.EmailID,
-      Password: bCrypting(req.body.Password),
-    });
-    NewClient.Password = undefined;
-    return res.status(201).send(NewClient);
-  } catch (Error) {
-    return res.status(400).send(Error);
-  }
+// Testing the post Method
+app.post('/upload', upload.single('file'), (req, res)=> {
+  console.log(req.file);
+  res.send("File Uploaded"+ req.file.location+ ' Location!');
 });
 
-app.get("/v1/account/:id", (req, res) => {
+// Implementing the Post Method
+const Ufile = upload.single("file");
+app.post("/v1/document", (req, res) => {
   try {
-    const ClientID = req.params.id;
     const EncodedUserPass = req.headers.authorization.split(" ")[1];
     const DecodedUserPass = Buffer.from(EncodedUserPass, "base64").toString(
       "ascii"
     );
     const DecodedUser = DecodedUserPass.split(":")[0];
     const DecodedPass = DecodedUserPass.split(":")[1];
-    User.findOne({ where: { EmailId: DecodedUser, id: ClientID } }).then(
+    User.findOne({ where: { EmailId: DecodedUser} }).then(
       (result) => {
         if (result === null) {
           res.status(200);
@@ -81,8 +74,18 @@ app.get("/v1/account/:id", (req, res) => {
             result.dataValues.Password,
             function (err, authenticated) {
               if (authenticated) {
-                result.dataValues.Password = undefined;
-                res.status(200).send(result);
+                console.log("Authenticated........................>", authenticated);
+                Ufile(req, res, async (err) => {
+                  if (err) {
+                    res.status(400).send("Bad Request");
+                  }
+                  const docx = await Document.create({
+                    user_id: result.dataValues.id,
+                    name: req.file.key,
+                    s3_bucket_path: req.file.location
+                  });
+                  res.status(201).send(docx);
+                });
               } else {
                 res.status(200);
                 res.send({ Output: "Wrong Password" });
@@ -97,229 +100,49 @@ app.get("/v1/account/:id", (req, res) => {
   }
 });
 
-// // const basicAuth = require("express-basic-auth");
-// // app.use(basicAuth);
-
-
-// //Adding Basic Authentication  
-// // function Basicauthentication(req, res, next) {
-// //   var authenticationHeader = req.headers.authorization || null;
-// //   if (!authenticationHeader) {
-// //     return res.status(400);
-// //   }
-// //   var auth = new Buffer.from(authenticationHeader.split(" ")[1], "base64")
-// //     .toString()
-// //     .split(":");
-// //   return auth;
-// // }
-
-// // //get user data with sequalize 
-// // app.get("/v1/account/:id", async (req, res) => {
-// //   try {
-// //     auth = Basicauthentication(req, res);
-// //     var userName = auth[0];
-// //     var passWord = auth[1];
-// //     const client = await User.findOne({
-// //       where: {
-// //         username: userName,
-// //       },
-
-// //     });
-// //     if (client) {
-// //       const validPass = bcrypt.compareSync(passWord, client.password);
-// //       if (validPass) {
-// //         if (req.params.id === client.id) {
-// //           client.password = undefined;
-// //           return res.status(200).send(client);
-// //         } else {
-// //           return res.status(403).send("Forbidden");
-// //         }
-// //       } else {
-// //         return res.status(401).send("Unauthorized");
-// //       }
-// //     } else {
-// //       return res.status(401).send("Unauthorized");
-// //     }
-// //   } catch (err) {
-
-// //     console.log(err);
-// //     return res.status(400).send("Bad Request");
-// //   }
-// // });
-
-
-
-// // // create new user end point with sequelize 
-// // app.post("/v1/account", async (req, res) => {
-// //   try {
-// //     const hash = await bcrypt.hash(req.body.password, 10);
-// //     const newuser = await User.create({
-// //       FirstName: req.body.FirstName,
-// //       LastName: req.body.LastName,
-// //       EmailId: req.body.EmailID,
-// //       password: hash,
-// //     });
-
-// //     newuser.password = undefined;
-// //     return res.status(201).send(newuser);
-// //   } catch (err) {
-
-// //     return res.status(400).send(err);
-// //   }
-// // });
-
-// // app.put("/v1/account/:id", async (req, res) => {
-// //   // Checking  any other fields than the editable fields
-// //   try {
-// //     const bodyfields = req.body;
-// //     for (let x in bodyfields) {
-// //       if (
-// //         x != "first_name" &&
-// //         x != "last_name" &&
-// //         x != "password" &&
-// //         x != "username"
-// //       ) {
-// //         return res.status(400).send("Bad Request");
-// //       }
-// //     }
-
-// //     auth = Basicauthentication(req, res);
-// //     var user = auth[0];
-// //     var pass = auth[1];
-
-// //     const dbAcc = await User.findOne({
-// //       where: {
-// //         username: user,
-// //       },
-// //     });
-// //     if (dbAcc) {
-
-// //       const validPass = bcrypt.compareSync(pass, dbAcc.password);
-// //       if (validPass) {
-// //         if (req.params.id === dbAcc.id) {
-// //           const Hpassword = req.body.password || pass
-// //           const first = req.body.first_name || dbAcc.first_name
-// //           const last = req.body.last_name || dbAcc.last_name
-
-// //           const hash = bcrypt.hashSync(Hpassword, 10);
-// //           const Accu = await User.update({
-// //             first_name: first,
-// //             last_name: last,
-// //             password: hash
-// //           }, {
-// //             where: {
-// //               username: user,
-// //             },
-// //           });
-
-// //           return res.status(200).send("");
-
-// //         } else {
-// //           return res.status(403).send("Forbidden");
-// //         }
-// //       } else {
-// //         return res.status(401).send("Unauthorized");
-// //       }
-// //     } else {
-// //       return res.status(401).send("Unauthorized");
-// //     }
-// //   } catch (err) {
-// //     console.log(err);
-// //     return res.status(400).send("Bad Request");
-// //   }
-// // });
-// app.put("/v1/account/:id", (req, res) => {
-//   try {
-//     const ClientID = req.params.id;
-//     const EncodedUserPass = req.headers.authorization.split(" ")[1];
-//     const DecodedUserPass = Buffer.from(EncodedUserPass, "base64").toString(
-//       "ascii"
-//     );
-//     const DecodedUser = DecodedUserPass.split(":")[0];
-//     const DecodedPass = DecodedUserPass.split(":")[1];
-//     User.findOne({ where: { EmailId: DecodedUser, id: ClientID } }).then(
-//       (result) => {
-//         if (result === null) {
-//           res.status(200);
-//           res.send({ Output: "Client Not Found" });
-//         } else {
-//           bcrypt.compare(
-//             DecodedPass,
-//             result.dataValues.Password,
-//             function async(err, authenticated) {
-//               if (authenticated) {
-//                 User.update(req.body, { where: { id: ClientID } }).then(
-//                   (result) => {
-//                     User.findOne({
-//                       where: { EmailId: DecodedUser, id: ClientID },
-//                     }).then((UpdatedResult) => {
-//                       console.log(UpdatedResult);
-//                       UpdatedResult.dataValues.Password = undefined;
-//                       res.status(200).send(UpdatedResult);
-//                     });
-//                   }
-//                 );
-//               } else {
-//                 res.status(200);
-//                 res.send({ Output: "Wrong password" });
-//               }
-//             }
-//           );
-//         }
-//       }
-//     );
-//   } catch (err) {
-//     return res.status(400).send("Client Not Found");
-//   }
-// });
-
-  app.post('/upload', upload.single('file'), (req, res)=> {
-    // console.log(req.file);
-    res.send("File Uploaded"+ req.file.location+ ' Location!');
-  });
-
-// Document upload End point
-
-// endpoint to upload the document 
-const Ufile = upload.single("file");
-app.post("/v1/upload", async (req, res) => {
+app.get("/v1/document/:doc_id", (req, res) => {
   try {
-    const ClientID = req.params.id;
+    const DocId = req.params.doc_id;
     const EncodedUserPass = req.headers.authorization.split(" ")[1];
     const DecodedUserPass = Buffer.from(EncodedUserPass, "base64").toString(
       "ascii"
     );
     const DecodedUser = DecodedUserPass.split(":")[0];
     const DecodedPass = DecodedUserPass.split(":")[1];
-    User.findOne({ where: { EmailId: DecodedUser, id: ClientID } }).then(
+    User.findOne({ where: { EmailId: DecodedUser} }).then(
       (result) => {
         if (result === null) {
           res.status(200);
           res.send({ Output: "Client Not Found" });
         } else {
+          
           bcrypt.compare(
             DecodedPass,
             result.dataValues.Password,
-            function async(err, authenticated) {
+            function (err, authenticated) {
               if (authenticated) {
-                Ufile(req, res, async (err) => {
-                  if (err) {
-                    res.status(400)
-                    res.send({ Output: "Error in uploading the file" });
-                  } else {
-                    const newDoc = await Document.create({
-                      ClientId: ClientID,
-                      DocumentName: req.file.originalname,
-                      DocumentType: req.file.mimetype,
-                      DocumentData: req.file.buffer,
-                    });
-                    res.status(201)
-                    res.send(newDoc, { Output: "File Uploaded Successfully" });
-                  }
-                });
-              }else {
+                console.log("Authenticated........................>", authenticated);
+  
+                // const DocId = DocID; 
+                Document.findOne({
+                where: {
+                user_id: result.dataValues.id, 
+                doc_id: DocId
+              },
+              }).then(
+              (DocResult)=>{ 
+                // console.log(DocResult, "...............>>>>>id");
+              if(DocResult){
+                res.status(200).send(DocResult);
+              }
+              else{
+                return res.status(403).send("Forbidden");
+              }
+            }
+            )
+              } else {
                 res.status(200);
-                res.send({ Output: "Wrong password" });
+                res.send({ Output: "Wrong Password" });
               }
             }
           );
@@ -329,44 +152,64 @@ app.post("/v1/upload", async (req, res) => {
   } catch (err) {
     return res.status(400).send("Client Not Found");
   }
-//   try {
-//     auth = Basicauthentication(req, res);
-//     var userName = auth[0];
-//     var passWord = auth[1];
-//     const client = await User.findOne({
-//       where: {
-//         username: userName,
-//       },
-//     });
-//     if (client) {
-//       const CorrectPass = bcrypt.compareSync(passWord, client.password);
-//       if (CorrectPass) {
-//         Ufile(req, res, async (err) => {
-//           if (err) {
-//             res.status(400).send("Bad Request");
-//           }
-//           const docx = await Document.create({
-//             user_id: client.id,
-//             name: req.file.key,
-//             s3_bucket_path: req.file.location
-//           });
+});
 
-//           res.status(201).send(docx);
+app.delete("/v1/document/:doc_id", async (req, res) => {
+  try{
+    // const DocId = req.params.doc_id;
+    const EncodedUserPass = req.headers.authorization.split(" ")[1];
+    const DecodedUserPass = Buffer.from(EncodedUserPass, "base64").toString(
+      "ascii"
+    );
+    const DecodedUser = DecodedUserPass.split(":")[0];
+    const DecodedPass = DecodedUserPass.split(":")[1];
+    console.log(DecodedUser, "pass user");
+    console.log(DecodedPass, "pass pass");
+   const Client = await User.findOne({
+    where: {
+      EmailId: DecodedUser,
+    },
+  });
+      if (Client) {
+        const CorrectPass = bcrypt.compareSync(DecodedPass, Client.Password);
+        if (CorrectPass) {    
+          const document_id = req.params.doc_id; 
+            const docx = await Document.findOne({
+              where: {
+                user_id: Client.id,
+                doc_id:document_id,
+              },
+            });
+            if (docx) {
+              await s3.deleteObject({Bucket:BUCKET,Key: docx.name}).promise();
+              const del = await Document.destroy({
+                where: {
+                  user_id: Client.id,
+                  doc_id: document_id,
+                },
+              });
+               if(del){
+                res.status(200).send("Document Deleted");
+               }
+            }
+            else{
+              return res.status(404).send("Not Found");
+            }
+         } else {
+          return res.status(401).send("Unauthorized");
+        }
+      } else {
+        return res.status(401).send("Unauthorized");
+      }
+    }
+    catch(err) {
+        console.log(err);
+        return res.status(400).send("Bad Request");
+    }
+    });
 
-//         });
-//       } else {
-//         return res.status(401).send("Unauthorized");
-//       }
-//     } else {
-//       return res.status(401).send("Unauthorized");
-//     }
-//   } catch (err) {
 
-//     console.log(err);
-//     return res.status(400).send("Bad Request");
-//   }
-}
-);
+
 
 User.sequelize.sync().then((req) => {
   app.listen(3080, () => {

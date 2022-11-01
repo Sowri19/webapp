@@ -6,15 +6,31 @@ const Sequelize = require('sequelize');
 const process = require('process');
 const basename = path.basename(__filename);
 const env = process.env.NODE_ENV || 'development';
-const config = require(__dirname + '/../config/config.json')[env];
+// const config = require(__dirname + '/../config/config.json')[env];
 const db = {};
 
-let sequelize;
-if (config.use_env_variable) {
-  sequelize = new Sequelize(process.env[config.use_env_variable], config);
-} else {
-  sequelize = new Sequelize(config.database, config.username, config.password, config);
-}
+const JSConfig= require(__dirname + '/../config/config.js');
+console.log(JSConfig, "......>JSConfig file");
+
+// var sequelizeOptions = {
+//   host: JSConfig.RDS,
+//   port: 3306,
+//   logging: console.log,
+//   maxConcurrentQueries: 100,
+//   dialect: 'mysql',
+//   ssl: 'Amazon RDS',
+//   pool: { maxConnections: 5, maxIdleTime: 30 },
+//   language: 'en',
+// }
+
+let sequelize=new Sequelize(JSConfig.RDSdatabase,JSConfig.RDSuser,JSConfig.RDSpassword,JSConfig);
+
+// let sequelize;
+// if (config.use_env_variable) {
+//   sequelize = new Sequelize(process.env[config.use_env_variable], config);
+// } else {
+//   sequelize = new Sequelize(config.database, config.username, config.password, config);
+// }
 
 fs
   .readdirSync(__dirname)
