@@ -27,3 +27,5 @@ Also SwaggerUI is set in the /api-docs endpoint of the same port url
 
 (Assignment 4 and 5)
 AMI is created using the github by the pull and merge request and vpc, rds, s3, ec2 instances are launched using the cloud formation templete.
+
+For creating the pull request to create the AMI
