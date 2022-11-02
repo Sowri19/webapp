@@ -24,10 +24,10 @@
 // module.exports = config;
 require("dotenv").config();
 module.exports ={
-    RDShost: process.env.RDShost,
-    RDSuser: process.env.RDSuser,
-    RDSpassword: process.env.RDSpassword,
-    RDSdatabase: process.env.RDSdatabase,
+    host: process.env.host,
+    user: process.env.user,
+    password: process.env.password,
+    database: process.env.database,
     dialect: "mysql",
     pool:{
         max: 5,
