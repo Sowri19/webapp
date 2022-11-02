@@ -15,12 +15,12 @@ Document.sequelize.sync();
 // console.log(JSConfig, "......>JSConfig file");
 
 aws.config.update({
-  secretAccessKey: process.env.AWSCLOUD_SECRET_ACCESS_KEY,
-  accessKeyId: process.env.AWSCLOUD_ACCESS_KEY_ID,
-  region: process.env.REGION,
+  secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+  accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+  region: process.env.region,
 });
 
-console.log(process.env.S3BUCKET,process.env.REGION,"......>JSConfig file BUCKET and REGION");
+console.log(process.env.BUCKET,process.env.region,"......>JSConfig file");
 // aws.config.update({
 //   secretAccessKey: process.env.ACCESS_SECRET,
 //   accessKeyId: process.env.ACCESS_KEY,
@@ -28,7 +28,7 @@ console.log(process.env.S3BUCKET,process.env.REGION,"......>JSConfig file BUCKET
 // });
 
 // configuring the Bucket
-const BUCKET = process.env.S3BUCKET
+const BUCKET = process.env.BUCKET
 
 
 const s3 = new aws.S3();

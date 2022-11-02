@@ -23,7 +23,7 @@ console.log(JSConfig, "......>JSConfig file");
 //   language: 'en',
 // }
 
-let sequelize=new Sequelize(JSConfig.RDSdatabase,JSConfig.RDSuser,JSConfig.RDSpassword,JSConfig);
+let sequelize=new Sequelize(JSConfig.database,JSConfig.user,JSConfig.password,JSConfig);
 
 // let sequelize;
 // if (config.use_env_variable) {
