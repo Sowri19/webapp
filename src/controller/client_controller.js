@@ -8,6 +8,13 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 let mysql = require('mysql2');
 const { User, Document } = require("../../models");
+
+// setting up the cloud watch metrics and stats
+const log = require("../../config/log");
+const config = require("../../config/config.js");
+const statsd = require("statsd-client");
+const sd = new statsd({host: config.hostName_Metric, port: config.port_Metric});
+
 User.sequelize.sync();
 Document.sequelize.sync();
 
@@ -40,10 +47,11 @@ const upload = multer({
     bucket: BUCKET,
     key: function (req, file, cb) {
       console.log(file);
-      cb(null, Date.now().toString()+file.originalname)
+      cb(null, file.originalname)
     }
   })
 });
+
 // const {
 //   addDataObject,
 //   getDataObject,
@@ -84,6 +92,9 @@ let ValidObject = (obj) => {
 };
 
 app.get("/healthz", async (req, res) => {
+    sdc.timing('Healthz.timeout', start);
+    log.info("/healthz is working");
+    sdc.increment('endpoint.health');
   res.send({ message: "The server is running" });
 });
 
@@ -118,9 +129,15 @@ app.post("/v1/account", async (req, res) => {
       EmailId: req.body.EmailID,
       Password: bCrypting(req.body.Password),
     });
+    sdc.timing('postclient.timeout', start);
+    log.info("post /v1/account is working client created");
+    sdc.increment('endpoint.postclient');
     NewClient.Password = undefined;
     return res.status(201).send(NewClient);
   } catch (Error) {
+    sdc.timing('postclient.timeout', start);
+    log.info("post /v1/account is not working client not created");
+    sdc.increment('endpoint.postclient');
     return res.status(400).send(Error);
   }
 });
@@ -186,10 +203,16 @@ app.get("/v1/account/:id", (req, res) => {
             result.dataValues.Password,
             function (err, authenticated) {
               if (authenticated) {
+                sdc.timing('getclient.timeout', start);
+                log.info("get /v1/account/:id is working client found");
+                sdc.increment('endpoint.getclient');
                 result.dataValues.Password = undefined;
                 res.status(200).send(result);
               } else {
                 res.status(200);
+                sdc.timing('getclient.timeout', start);
+                 log.info("get /v1/account/:id is working client wrong password");
+                sdc.increment('endpoint.getclient');
                 res.send({ Output: "Wrong Password" });
               }
             }
@@ -265,12 +288,18 @@ app.put("/v1/account/:id", (req, res) => {
                     }).then((UpdatedResult) => {
                       console.log(UpdatedResult);
                       UpdatedResult.dataValues.Password = undefined;
+                      sdc.timing('putclient.timeout', start);
+                      log.info("put /v1/account/:id is working client updated");
+                      sdc.increment('endpoint.putclient');
                       res.status(200).send(UpdatedResult);
                     });
                   }
                 );
               } else {
                 res.status(200);
+                sdc.timing('putclient.timeout', start);
+                log.info("put /v1/account/:id is working client wrong password");
+                sdc.increment('endpoint.putclient');
                 res.send({ Output: "Wrong password" });
               }
             }
@@ -320,10 +349,16 @@ app.post("/v1/document", (req, res) => {
                     name: req.file.key,
                     s3_bucket_path: req.file.location
                   });
+                  sdc.timing('postclientdocument.timeout', start);
+                  log.info("put /v1/document is working file uploaded");
+                  sdc.increment('endpoint.postclientdocument');
                   res.status(201).send(docx);
                 });
               } else {
                 res.status(200);
+                sdc.timing('postclientdocument.timeout', start);
+                log.info("put /v1/document is not working wrong password");
+                sdc.increment('endpoint.postclientdocument');
                 res.send({ Output: "Wrong Password" });
               }
             }
@@ -369,15 +404,24 @@ app.get("/v1/document/:doc_id", (req, res) => {
               (DocResult)=>{ 
                 // console.log(DocResult, "...............>>>>>id");
               if(DocResult){
+                sdc.timing('getclientdocument.timeout', start);
+                log.info("get /v1/document/:doc_id is working document found");
+                sdc.increment('endpoint.getclientdocument');
                 res.status(200).send(DocResult);
               }
               else{
+                sdc.timing('getclientdocument.timeout', start);
+                log.info("get /v1/document/:doc_id is not working Forbiden");
+                sdc.increment('endpoint.getclientdocument');
                 return res.status(403).send("Forbidden");
               }
             }
             )
               } else {
                 res.status(200);
+                sdc.timing('getclientdocument.timeout', start);
+                log.info("get /v1/document/:doc_id is not working wrong password");
+                sdc.increment('endpoint.getclientdocument');
                 res.send({ Output: "Wrong Password" });
               }
             }
@@ -425,16 +469,28 @@ app.delete("/v1/document/:doc_id", async (req, res) => {
                 },
               });
                if(del){
+                sdc.timing('deleteclientdocument.timeout', start);
+                log.info("delete /v1/document/:doc_id working Docuemnt Deleted");
+                sdc.increment('endpoint.deleteclientdocument');
                 res.status(200).send("Document Deleted");
                }
             }
             else{
+              sdc.timing('deleteclientdocument.timeout', start);
+              log.info("delete /v1/document/:doc_id working Not Found");
+              sdc.increment('endpoint.deleteclientdocument');
               return res.status(404).send("Not Found");
             }
          } else {
+          sdc.timing('deleteclientdocument.timeout', start);
+          log.info("delete /v1/document/:doc_id working unauthorized");
+          sdc.increment('endpoint.deleteclientdocument');
           return res.status(401).send("Unauthorized");
         }
       } else {
+        sdc.timing('deleteclientdocument.timeout', start);
+        log.info("delete /v1/document/:doc_id working unauthorized");
+        sdc.increment('endpoint.deleteclientdocument');
         return res.status(401).send("Unauthorized");
       }
     }
