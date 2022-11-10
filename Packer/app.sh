@@ -34,6 +34,17 @@ sudo mv /tmp/webapp.service etc/systemd/system/webapp.service
 sudo systemctl enable webapp.service
 sudo systemctl start webapp.service
 
+echo "Installing Cloud Watch Agent"
+# sudo apt-get install amazon-cloudwatch-agent -y 
+wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
+sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
+
+echo "Configuring Cloud Watch Agent"
+sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
+-a fetch-config \
+-m ec2 \
+-c file:/home/ubuntu/webapp/statsd/cloudwatch-config.json \
+-s
 
 echo "Installing mysql server"
 
@@ -56,6 +67,6 @@ echo "Starting mysql server"
 sudo service mysql start
 sudo npm i pm2
 sudo npm i -g pm2
-sudo pm2 start client_controller.js
+sudo pm2 start src/controller/client_controller.js
 sudo pm2 startup systemd
 sudo apt-get clean
