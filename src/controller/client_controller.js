@@ -8,6 +8,12 @@ const multer = require('multer');
 const multerS3 = require('multer-s3');
 let mysql = require('mysql2');
 const { User, Document } = require("../../models");
+
+// setting up the cloud watch metrics and stats
+const config = require("../../config/config.js");
+const statsd = require("statsd-client");
+const sd = new statsd({host: config.hostName_Metric, port: config.port_Metric});
+
 User.sequelize.sync();
 Document.sequelize.sync();
 

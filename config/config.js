@@ -34,6 +34,8 @@ module.exports ={
         min: 0,
         Idle: 10000
     },
+    hostName_Metric: "localhost",
+    port_Metric: 3080,
 };
 
 
