@@ -13,7 +13,8 @@ const { User, Document } = require("../../models");
 const log = require("../../config/log");
 const config = require("../../config/config.js");
 const statsd = require("statsd-client");
-const sd = new statsd({host: config.hostName_Metric, port: config.port_Metric});
+const sdc = new statsd({host: config.hostName_Metric, port: config.port_Metric});
+let start = new Date();
 
 User.sequelize.sync();
 Document.sequelize.sync();
