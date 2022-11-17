@@ -170,7 +170,7 @@ app.post("/v1/account", async (req, res) => {
     } catch (err) {
       console.log('err dynamoDatabase', err);
     }
-    
+
     var msg = {
       'username': NewClient.EmailId,
       'token': randomnanoID
@@ -263,6 +263,75 @@ app.get("/v1/account/:id", (req, res) => {
             Output: "Client Not Found"
           });
         } else {
+          var params = {
+            TableName: 'csye-6225',
+            Key: {
+                'Email': {
+                    S: req.query.emailId
+                },
+                'TokenName': {
+                    S: req.query.token
+                }
+            }
+        };
+        dynamoDatabase.getItem(params, function (err, data) {
+          if (err) {
+              console.log("Error", err);
+              res.status(400).send({
+                  message: 'unable to verify it'
+              });
+          } else {
+              console.log("Success in dynamoDatabase getting the item", data.Item);
+              try {
+                  var ttl = data.Item.TimeToLive.N;
+                  var curr = new Date().getTime();
+                  console.log(ttl);
+                  console.log('time diff', curr - ttl);
+                  var time = (curr - ttl) / 60000;
+                  console.log('time diff ', time);
+                  if (time < 5) {
+                      if (data.Item.Email.S == user.dataValues.username) {
+                          User.update({
+                              Verified: true,
+                          }, {
+                              where: {
+                                  username: req.query.emailId
+                              }
+                          }).then((result) => {
+                              if (result == 1) {
+                                  log.info("update user 200");
+                                  sdc.increment('endpoint.userUpdate');
+                                  res.status(200).send({
+                                      message: 'Successfully Verified the client'
+                                  });
+                              } else {
+                                  res.status(400).send({
+                                      message: 'unable to verified the client'
+                                  });
+                              }
+                          }).catch(err => {
+                              res.status(500).send({
+                                  message: 'Error Updating the client'
+                              });
+                          });
+                      } else {
+                          res.status(400).send({
+                              message: 'Token and email did not matched'
+                          });
+                      }
+                  } else {
+                      res.status(400).send({
+                          message: 'token Expired! Cannot verify Email'
+                      });
+                  }
+              } catch (err) {
+                  console.log("Error", err);
+                  res.status(400).send({
+                      message: 'unable to verify'
+                  });
+              }
+          }
+      })
           bcrypt.compare(
             DecodedPass,
             result.dataValues.Password,
