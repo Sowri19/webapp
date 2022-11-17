@@ -1,46 +1,55 @@
-
+// ALL THE IMPORTS*************************************
 const express = require("express");
-
 require("dotenv").config();
-
 const aws = require('aws-sdk');
 const multer = require('multer');
 const multerS3 = require('multer-s3');
 let mysql = require('mysql2');
 const { User, Document } = require("../../models");
-
-// setting up the cloud watch metrics and stats
+const cors = require("cors");
+const bodyParser = require("body-parser");
+const { where } = require("sequelize");
+const app = express();
+const saltRounds = 10;
+const bcrypt = require("bcrypt");
+// const salting = bcrypt.genSaltSync(10);
+// const uuid = require("uuid");
+app.use(cors());
+app.use(bodyParser.json());
+User.sequelize.sync();
+Document.sequelize.sync();
+// setting up the cloud watch metrics and stats*****************
 const log = require("../../config/log");
 const config = require("../../config/config.js");
 const statsd = require("statsd-client");
 const sdc = new statsd({host: config.hostName_Metric, port: config.port_Metric});
 let start = new Date();
+// **************************************************************
+// ****************************************************************
 
-User.sequelize.sync();
-Document.sequelize.sync();
+
 
 // const JSConfig= require(__dirname + "../../config/config.js");
 // console.log(JSConfig, "......>JSConfig file");
 
+// AWS CONFIGURATION FOR S3 BUCKET*****************************************************
 aws.config.update({
   secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
   accessKeyId: process.env.AWS_ACCESS_KEY_ID,
   region: process.env.region,
 });
-
 console.log(process.env.BUCKET,process.env.region,"......>JSConfig file");
+// *****************************************************************************************
+
 // aws.config.update({
 //   secretAccessKey: process.env.ACCESS_SECRET,
 //   accessKeyId: process.env.ACCESS_KEY,
 //   region: process.env.REGION,
 // });
 
-// configuring the Bucket
+// CONFIGURING THE MULTER TO THE S3 BUCKET*******************************************************
 const BUCKET = process.env.BUCKET
-
-
 const s3 = new aws.S3();
-
 const upload = multer({
   storage: multerS3({
     s3: s3,
@@ -48,10 +57,19 @@ const upload = multer({
     bucket: BUCKET,
     key: function (req, file, cb) {
       console.log(file);
-      cb(null, file.originalname)
+      cb(null, Date.now().toString()+file.originalname)
     }
   })
 });
+// ****************************************************************************************
+
+// CONFIGURING THE AWS SNS FOR THE EMAIL VERIFICATION****************************************
+var sns = new aws.SNS({});
+var dynamoDatabase = new aws.DynamoDB({
+    apiVersion: '2012-08-10',
+    region: process.env.region || 'us-east-1'
+});
+// ****************************************************************************************
 
 // const {
 //   addDataObject,
@@ -62,23 +80,11 @@ const upload = multer({
 //   getData,
 // } = require("../model/client");
 
-const cors = require("cors");
-const bodyParser = require("body-parser");
-const app = express();
-const saltRounds = 10;
-// const salting = bcrypt.genSaltSync(10);
-// const uuid = require("uuid");
-const bcrypt = require("bcrypt");
-
-app.use(cors());
-app.use(bodyParser.json());
-
-const { where } = require("sequelize");
-
 let bCrypting = (Password) => {
   return bcrypt.hashSync(Password, bcrypt.genSaltSync(10));
 };
 
+// WE ARE NOT USING THIS CODE OF DATA VALIDATION SEQUALIZE IS TAKING CARE OF IT************
 let ValidObject = (obj) => {
   if (
     Object.keys(obj).length === 0 ||
@@ -91,6 +97,7 @@ let ValidObject = (obj) => {
     return true;
   }
 };
+// **********************************************************************************
 
 app.get("/healthz", async (req, res) => {
     sdc.timing('Healthz.timeout', start);
