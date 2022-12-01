@@ -29,6 +29,9 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false,
       },
+      Verified: {
+        type: DataTypes.BOOLEAN,
+      },
     },
     {
       createdAt: "account_created",
