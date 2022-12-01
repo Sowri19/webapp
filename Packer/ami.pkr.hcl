@@ -19,6 +19,10 @@ variable "subnet_id" {
   default = "subnet-0a228ce80ce496973"
 }
 
+post-processor "manifest" {
+      output = "../manifest.json"
+      strip_path = true
+  }
 
 #https://www.packer.io/plugins/builders/amazon/ebs
 
