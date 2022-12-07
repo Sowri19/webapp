@@ -46,6 +46,7 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.ROOT_ACCESS_KEY_ID }} #root
           aws-secret-access-key: ${{ secrets.ROOT_SECRET_ACCESS_KEY}}
+          aws-region: "us-east-1"
       - name: AWS CLI
         run: |
               echo "ID=$(jq -r '.builds[-1].artifact_id' output.json | cut -d ":" -f2)" >> $GITHUB_ENV
