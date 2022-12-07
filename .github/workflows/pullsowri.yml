@@ -21,21 +21,21 @@ jobs:
         run: echo Hello, world!
       - name: Run a multi-line script
         run: |
-          echo Add other actions to build,
-          echo test, and deploy your project.
+              echo Add other actions to build,
+              echo test, and deploy your project.
       - name: Setup Packer
         uses: hashicorp-contrib/setup-packer@v1.0.0
       - name: Zip all the webapp imp files
         run: |
-          zip -r webapp.zip ./
-          pwd ./webapp
+              zip -r webapp.zip ./
+              pwd ./webapp
       - name: Run packer commands
         run: |
-          cd Packer
-          packer init .
-          packer fmt .
-          packer validate .
-          packer build .
+              cd Packer
+              packer init .
+              packer fmt .
+              packer validate .
+              packer build .
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}      #dev for building    
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
