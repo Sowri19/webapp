@@ -25,7 +25,7 @@ sudo apt-get install zip unzip
 sudo unzip webapp.zip -d webapp
 #sudo mkdir webapp
 #sudo mv config models Packer src statsd package-lock.json package.json README.md test.js ~/webapp/
-cd home/ubuntu/webapp
+cd /home/ubuntu/webapp
 sudo curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh
 sudo bash nodesource_setup.sh
 sudo apt-get install nodejs -y
