@@ -20,9 +20,9 @@ sleep 30
 sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get install nginx -y
-sudo mkdir webapp
-sudo mv config models Packer src statsd package-lock.json package.json README.md test.js ~/webapp/
-cd webapp
+#sudo mkdir webapp
+#sudo mv config models Packer src statsd package-lock.json package.json README.md test.js ~/webapp/
+cd home/ubuntu/webapp
 sudo curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh
 sudo bash nodesource_setup.sh
 sudo apt-get install nodejs -y
@@ -48,6 +48,6 @@ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
 
 sudo npm i pm2
 sudo npm i -g pm2
-sudo pm2 start src/controller/client_controller.js
+sudo pm2 start home/ubuntu/webapp/src/controller/client_controller.js
 sudo pm2 startup systemd
 sudo apt-get clean
