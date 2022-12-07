@@ -58,8 +58,8 @@ build {
 
   sources = ["source.amazon-ebs.my-ami"]
     provisioner "file" {
-        source = "../webapp.zip"
-        destination = "/tmp/webapp.zip"
+        source = ".././"
+        destination = "/home/ubuntu"
     }
 
         provisioner "file" {
@@ -70,5 +70,9 @@ build {
     provisioner "shell" {
         script="./app.sh"
     }
-     
+    
+    post-processor "manifest" {
+    output = "../manifest.json"
+    strip_path=true
+    } 
 }
