@@ -50,4 +50,6 @@ sudo npm i pm2
 sudo npm i -g pm2
 sudo pm2 start home/ubuntu/webapp/src/controller/client_controller.js
 sudo pm2 startup systemd
-sudo apt-get clean
+sudo pm2 save
+sudo pm2 list
+sudo pm2 status
