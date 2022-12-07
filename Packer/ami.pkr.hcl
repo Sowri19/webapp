@@ -32,7 +32,7 @@ source "amazon-ebs" "my-ami" {
   ]
 
 ami_users =[
-  "275040382637",
+  "275040382637","500270589937"
 ]
 
   aws_polling {

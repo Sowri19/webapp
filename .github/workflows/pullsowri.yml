@@ -37,17 +37,19 @@ jobs:
           packer validate .
           packer build .
         env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}          
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}      #dev for building    
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           AWS_REGION: "us-east-1"
-      - name: AWS CLI
-        id: install-aws-cli
-        uses: unfor19/install-aws-cli-action@v1.0.4
+
+      - name: AWS Root Credential Configure
+        uses: aws-actions/configure-aws-credentials@v1
         with:
-          version: 2
+          aws-access-key-id: ${{ secrets.ROOT_ACCESS_KEY_ID }} #root
+          aws-secret-access-key: ${{ secrets.ROOT_SECRET_ACCESS_KEY}}
+      - name: AWS CLI
       - run: |
-          aws --version
-          aws ec2 create-launch-template-version --launch-template-name asg_launch_config --source-version 1 --launch-template-data "ImageId=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d ":" -f2)"
-          aws autoscaling update-auto-scaling-group --auto-scaling-group-name autoscalinggroup-assignment09 --launch-template LaunchTemplateName='asg_launch_config',Version='$Latest'         
+          echo "ID=$(jq -r '.builds[-1].artifact_id' output.json | cut -d ":" -f2)" >> $GITHUB_ENV
+          aws ec2 create-launch-template-version --launch-template-name asg_launch_config --source-version 1 --launch-template-data '{"ImageId":"${{ env.ID}}"}'
+          aws autoscaling update-auto-scaling-group --auto-scaling-group-name autoscalinggroup-assignment09 --launch-template LaunchTemplateName=asg_launch_config,Version='$Latest'
           aws autoscaling start-instance-refresh --auto-scaling-group-name autoscalinggroup-assignment09
-        shell: bash    
+            
