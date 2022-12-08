@@ -48,9 +48,13 @@ jobs:
           aws-secret-access-key: ${{ secrets.ROOT_SECRET_ACCESS_KEY}}
           aws-region: "us-east-1"
       - name: AWS CLI
-        run: |
+        id: install-aws-cli
+        uses: unfor19/install-aws-cli-action@v1.0.4
+        with:
+          version: 2
+      - run: |
               ID=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d ":" -f2)
-              aws ec2 create-launch-template-version --launch-template-name asg_launch_config --source-version 1 --launch-template-data "ImageId"=$ID"
-              aws autoscaling update-auto-scaling-group --auto-scaling-group-name rootstack-myautoScalingGroup --launch-template LaunchTemplateName=asg_launch_config,Version='$Latest'
-              aws autoscaling start-instance-refresh --auto-scaling-group-name rootstack-myautoScalingGroup
+              aws ec2 create-launch-template-version --launch-template-name asg_launch_config --source-version 1 --launch-template-data "ImageId=$ID"
+              aws autoscaling update-auto-scaling-group --auto-scaling-group-name SowriScaleGroup --launch-template LaunchTemplateName=asg_launch_config,Version='$Latest'
+              aws autoscaling start-instance-refresh --auto-scaling-group-name SowriScaleGroup
             
