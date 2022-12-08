@@ -51,6 +51,6 @@ jobs:
         run: |
               ID=$(jq -r '.builds[-1].artifact_id' manifest.json | cut -d ":" -f2)
               aws ec2 create-launch-template-version --launch-template-name asg_launch_config --source-version 1 --launch-template-data "ImageId"=$ID"
-              aws autoscaling update-auto-scaling-group --auto-scaling-group-name autoscalinggroup-assignment09 --launch-template LaunchTemplateName=asg_launch_config,Version='$Latest'
-              aws autoscaling start-instance-refresh --auto-scaling-group-name autoscalinggroup-assignment09
+              aws autoscaling update-auto-scaling-group --auto-scaling-group-name rootstack-myautoScalingGroup --launch-template LaunchTemplateName=asg_launch_config,Version='$Latest'
+              aws autoscaling start-instance-refresh --auto-scaling-group-name rootstack-myautoScalingGroup
             
