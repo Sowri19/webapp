@@ -110,7 +110,7 @@ let ValidObject = (obj) => {
 };
 // **********************************************************************************
 
-app.get("/healthz", async (req, res) => {
+app.get("/health", async (req, res) => {
   sdc.timing('Healthz.timeout', start);
   log.info("/healthz is working");
   sdc.increment('endpoint.health');
