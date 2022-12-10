@@ -20,22 +20,23 @@ sleep 30
 sudo apt-get update
 sudo apt-get upgrade -y
 sudo apt-get install nginx -y
+
+sudo apt-get install zip unzip
+sudo unzip webapp.zip -d webapp
+#sudo mkdir webapp
+#sudo mv config models Packer src statsd package-lock.json package.json README.md test.js ~/webapp/
+cd /home/ubuntu/webapp
 sudo curl -sL https://deb.nodesource.com/setup_16.x -o nodesource_setup.sh
 sudo bash nodesource_setup.sh
 sudo apt-get install nodejs -y
 sudo apt-get install npm -y
-sudo mv /tmp/webapp.zip /home/ubuntu/webapp.zip
-sudo apt install unzip
-cd ~/ && unzip webapp.zip
-cd ~/webapp && npm i --only=prod
 
+npm i
 
-sudo mv /tmp/webapp.service etc/systemd/system/webapp.service
-sudo systemctl enable webapp.service
-sudo systemctl start webapp.service
+# echo "Installing mysql server"
+# sudo apt-get install mysql-server -y
 
 echo "Installing Cloud Watch Agent"
-# sudo apt-get install amazon-cloudwatch-agent -y 
 wget https://s3.amazonaws.com/amazoncloudwatch-agent/ubuntu/amd64/latest/amazon-cloudwatch-agent.deb
 sudo dpkg -i -E ./amazon-cloudwatch-agent.deb
 
@@ -46,27 +47,12 @@ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
 -c file:/home/ubuntu/webapp/statsd/cloudwatch-config.json \
 -s
 
-echo "Installing mysql server"
 
-sudo apt-get install mysql-server -y
 
-sudo mysql <<EOF
-
-CREATE DATABASE first_schema;
-
-CREATE USER 'sowri'@'localhost' IDENTIFIED BY 'Password';
-
-GRANT ALL PRIVILEGES ON first_schema.* TO 'sowri'@'localhost' WITH GRANT OPTION;
-
-FLUSH PRIVILEGES;
-
-EOF
-
-echo "Starting mysql server"
-
-sudo service mysql start
 sudo npm i pm2
 sudo npm i -g pm2
 sudo pm2 start src/controller/client_controller.js
 sudo pm2 startup systemd
-sudo apt-get clean
+sudo pm2 save
+sudo pm2 list
+sudo pm2 status

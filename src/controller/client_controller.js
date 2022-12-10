@@ -23,7 +23,7 @@ app.use(cors());
 app.use(bodyParser.json());
 User.sequelize.sync();
 Document.sequelize.sync();
-// setting up the cloud watch metrics and stats*****************
+// setting up the cloud watch metrics and stats****************
 const log = require("../../config/log");
 const config = require("../../config/config.js");
 const statsd = require("statsd-client");
@@ -110,7 +110,7 @@ let ValidObject = (obj) => {
 };
 // **********************************************************************************
 
-app.get("/healthz", async (req, res) => {
+app.get("/health", async (req, res) => {
   sdc.timing('Healthz.timeout', start);
   log.info("/healthz is working");
   sdc.increment('endpoint.health');

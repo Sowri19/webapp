@@ -19,10 +19,6 @@ variable "subnet_id" {
   default = "subnet-0a228ce80ce496973"
 }
 
-post-processor "manifest" {
-      output = "../manifest.json"
-      strip_path = true
-  }
 
 #https://www.packer.io/plugins/builders/amazon/ebs
 
@@ -36,7 +32,7 @@ source "amazon-ebs" "my-ami" {
   ]
 
 ami_users =[
-  "275040382637",
+  "275040382637","500270589937"
 ]
 
   aws_polling {
@@ -63,7 +59,7 @@ build {
   sources = ["source.amazon-ebs.my-ami"]
     provisioner "file" {
         source = "../webapp.zip"
-        destination = "/tmp/webapp.zip"
+        destination = "~/"
     }
 
         provisioner "file" {
@@ -74,5 +70,9 @@ build {
     provisioner "shell" {
         script="./app.sh"
     }
-     
+    
+    post-processor "manifest" {
+    output = "../manifest.json"
+    strip_path=true
+    } 
 }
