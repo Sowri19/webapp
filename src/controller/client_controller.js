@@ -1,4 +1,4 @@
-// ALL THE IMPORTS***********************************
+// ALL THE IMPORTS*************************************
 const express = require("express");
 require("dotenv").config();
 const aws = require('aws-sdk');
